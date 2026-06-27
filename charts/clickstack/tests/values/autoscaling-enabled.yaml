@@ -1,0 +1,13 @@
+hyperdx:
+  autoscaling:
+    enabled: true
+    spec:
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80

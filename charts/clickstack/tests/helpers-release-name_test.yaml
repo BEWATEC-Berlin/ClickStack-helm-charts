@@ -1,0 +1,9 @@
+suite: Test Helper Fullname Default Coverage
+templates:
+  - hyperdx/deployment.yaml
+tests:
+  - it: should compose release and chart name when release does not contain chart name
+    asserts:
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-clickstack-app

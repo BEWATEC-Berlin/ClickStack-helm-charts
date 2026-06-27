@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR || true)"
+
+if [[ -z "${staged}" ]]; then
+  exit 0
+fi
+
+chart_changes=false
+docs_changes=false
+
+while IFS= read -r path; do
+  [[ -z "${path}" ]] && continue
+  case "${path}" in
+    charts/*)
+      chart_changes=true
+      case "${path}" in
+        charts/*/Chart.yaml|charts/*/values.yaml|charts/*/README.md.gotmpl|charts/*/templates/*|scripts/helmdocs.sh|scripts/install-helm-docs.sh)
+          docs_changes=true
+          ;;
+      esac
+      ;;
+  esac
+done <<< "${staged}"
+
+if [[ "${chart_changes}" == true ]]; then
+  make test
+fi
+
+if [[ "${docs_changes}" == true ]]; then
+  make docs
+  if ! git diff --quiet -- charts/clickstack/README.md charts/clickstack-operators/README.md; then
+    echo "Chart README(s) are out of date. Run 'make docs' and stage the updated README.md files." >&2
+    exit 1
+  fi
+fi

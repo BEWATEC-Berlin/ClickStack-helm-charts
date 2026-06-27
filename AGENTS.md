@@ -8,6 +8,21 @@ Helm charts for ClickStack (HyperDX observability platform). Two charts:
 
 Package manager: Yarn 4 (via Corepack). Versioning: Changesets.
 
+## Local Development
+
+Use the Makefile for tool setup, unit tests, and template coverage:
+
+```bash
+make setup      # install helm-unittest, chart deps, and git hooks
+make test       # helm-unittest + example values validation
+make coverage   # helmcov template coverage via Docker (requires Docker)
+make ci         # test + coverage
+```
+
+The pre-commit hook runs `make test` when staged files under `charts/` change, and
+`make docs` when chart values, templates, or README templates change. Install hooks
+with `make setup` or `make hooks`.
+
 ## Build & Dependency Commands
 
 ```bash
@@ -35,14 +50,8 @@ helm template clickstack-test charts/clickstack -f examples/api-only/values.yaml
 
 ### Unit Tests (helm-unittest)
 
-Requires the `helm-unittest` plugin:
 ```bash
-helm plugin install https://github.com/helm-unittest/helm-unittest.git --version v1.0.3
-```
-
-```bash
-# Run ALL unit tests
-helm unittest charts/clickstack
+make test
 
 # Run a SINGLE test file
 helm unittest -f tests/app-deployment_test.yaml charts/clickstack
@@ -53,6 +62,35 @@ helm unittest -f 'tests/clickhouse-*_test.yaml' charts/clickstack
 
 Test files live in `charts/clickstack/tests/` and follow the naming convention
 `<component>_test.yaml`. Snapshots are stored in `tests/__snapshot__/`.
+
+### Template Coverage (helmcov)
+
+```bash
+make coverage
+
+# Verbose per-file output
+VERBOSE=1 make coverage
+
+# Gate on minimum line coverage once baseline is known
+COVERAGE_THRESHOLD=25 make coverage
+
+# Pin a different image
+HELMCOV_IMAGE=ghcr.io/jordan-simonovski/helmcov:v0.3.2 make coverage
+```
+
+Uses `ghcr.io/jordan-simonovski/helmcov:v0.3.2` by default with a **25% line
+coverage threshold**. Outputs `coverage.out` (Go coverprofile) and `coverage.xml`
+(Cobertura). CI runs `make coverage` via `.github/workflows/helmcov.yaml`.
+
+### Chart README (helm-docs)
+
+```bash
+make docs
+```
+
+Regenerates `charts/*/README.md` from `values.yaml` using [helm-docs](https://github.com/norwoodj/helm-docs).
+Each chart README includes version and CI build status badges.
+The pre-commit hook verifies docs are up to date when values or templates change.
 
 ### Integration Tests (Kind cluster)
 
@@ -151,6 +189,7 @@ tests:
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
 | Helm Chart Tests | `helm-test.yaml` | push/PR to main | Unit tests + example validation |
+| Helm Template Coverage | `helmcov.yaml` | push/PR to main | helmcov template line/branch coverage |
 | Integration Test | `chart-test.yml` | push/PR/nightly | Kind-based integration suites |
 | Release | `release.yml` | after tests pass on main | Changeset version + chart release |
 | Update App Version | `update-app-version.yml` | workflow_dispatch | Bump `appVersion` in Chart.yaml |
@@ -165,3 +204,4 @@ tests:
 - Example values: `examples/*/values.yaml`
 - Version sync script: `scripts/update-chart-versions.js`
 - Smoke test: `scripts/smoke-test.sh`
+- Makefile: `make setup`, `make test`, `make coverage`

@@ -1,0 +1,13 @@
+suite: Test HorizontalPodAutoscaler Enabled
+templates:
+  - hyperdx/hpa.yaml
+values:
+  - values/autoscaling-enabled.yaml
+tests:
+  - it: should render HPA when autoscaling is enabled
+    asserts:
+      - isKind:
+          of: HorizontalPodAutoscaler
+      - equal:
+          path: spec.minReplicas
+          value: 2

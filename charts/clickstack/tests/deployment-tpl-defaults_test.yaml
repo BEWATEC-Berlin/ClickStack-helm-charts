@@ -1,0 +1,12 @@
+suite: Test Deployment Default Sources Tpl
+templates:
+  - hyperdx/deployment.yaml
+values:
+  - values/deployment-tpl-defaults.yaml
+tests:
+  - it: should render inline default sources env var
+    asserts:
+      - isNotEmpty:
+          path: spec.template.spec.containers[0].env[?(@.name=="DEFAULT_SOURCES")]
+      - isNotEmpty:
+          path: spec.template.spec.containers[0].env[?(@.name=="DEFAULT_CONNECTIONS")]

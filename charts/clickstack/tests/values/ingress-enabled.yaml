@@ -1,0 +1,18 @@
+hyperdx:
+  ingress:
+    enabled: true
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+    spec:
+      ingressClassName: alb
+      rules:
+        - host: hyperdx.example.com
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: my-service
+                    port:
+                      number: 8000
