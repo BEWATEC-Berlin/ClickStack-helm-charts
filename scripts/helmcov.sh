@@ -3,12 +3,14 @@ set -e
 set -o pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT_DIR}/scripts/load-tool-versions.sh"
+load_tool_versions "${ROOT_DIR}"
 CHART_PATH="${CHART_PATH:-charts/clickstack}"
 TESTS_PATH="${TESTS_PATH:-charts/clickstack/tests}"
-HELMCOV_IMAGE="${HELMCOV_IMAGE:-ghcr.io/jordan-simonovski/helmcov:v0.3.2}"
 COVERAGE_OUT="${COVERAGE_OUT:-coverage.out}"
 COVERAGE_XML="${COVERAGE_XML:-coverage.xml}"
-THRESHOLD="${THRESHOLD:-25}"
+THRESHOLD="${THRESHOLD:-30}"
 MAX_SCENARIOS="${MAX_SCENARIOS:-20}"
 SEED="${SEED:-42}"
 VERBOSE="${VERBOSE:-}"
@@ -50,6 +52,7 @@ fi
 
 docker run --rm \
   --platform linux/amd64 \
+  --user "$(id -u):$(id -g)" \
   -v "${ROOT_DIR}:/work" \
   -w /work \
   "${HELMCOV_IMAGE}" \

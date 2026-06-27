@@ -1,10 +1,12 @@
 SHELL := /bin/bash
 
+include scripts/tool-versions.env
+export HELM_DOCS_VERSION HELMCOV_IMAGE
+
 CHART ?= charts/clickstack
-HELMCOV_IMAGE ?= ghcr.io/jordan-simonovski/helmcov:v0.3.2
 HELM_UNITTEST_VERSION ?= v1.0.3
 HELM_UNITTEST_PLUGIN := https://github.com/helm-unittest/helm-unittest.git
-COVERAGE_THRESHOLD ?= 25
+COVERAGE_THRESHOLD ?= 30
 
 .PHONY: help setup hooks chart-deps install-helm-unittest install-helm-docs validate test coverage docs ci
 

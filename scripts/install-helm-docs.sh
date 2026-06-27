@@ -2,16 +2,23 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT_DIR}/scripts/load-tool-versions.sh"
+load_tool_versions "${ROOT_DIR}"
 TOOLS_DIR="${ROOT_DIR}/.tools"
-HELM_DOCS_VERSION="${HELM_DOCS_VERSION:-v1.14.2}"
 HELM_DOCS_BIN="${TOOLS_DIR}/helm-docs"
+expected_version="${HELM_DOCS_VERSION#v}"
 
 if [[ -x "${HELM_DOCS_BIN}" ]]; then
-  echo "helm-docs already installed at ${HELM_DOCS_BIN}"
-  exit 0
+  installed_version="$("${HELM_DOCS_BIN}" --version 2>/dev/null | awk '{print $NF}')"
+  if [[ "${installed_version}" == "${expected_version}" ]]; then
+    echo "helm-docs ${HELM_DOCS_VERSION} already installed at ${HELM_DOCS_BIN}"
+    exit 0
+  fi
+  echo "helm-docs version mismatch (installed: ${installed_version}, wanted: ${expected_version}); reinstalling..."
 fi
 
-os="$(uname | tr '[:upper:]' '[:lower:]')"
+os="$(uname)"
 arch="$(uname -m)"
 case "${arch}" in
   x86_64) arch="x86_64" ;;

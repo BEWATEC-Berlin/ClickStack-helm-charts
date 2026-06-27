@@ -63,6 +63,27 @@ helm unittest -f 'tests/clickhouse-*_test.yaml' charts/clickstack
 Test files live in `charts/clickstack/tests/` and follow the naming convention
 `<component>_test.yaml`. Snapshots are stored in `tests/__snapshot__/`.
 
+Shared value fixtures live in `charts/clickstack/tests/values/<case>.yaml` and are
+loaded with the suite-level `values:` key when a test needs more data than inline
+`set:` overrides comfortably provide:
+
+```yaml
+suite: Test Deployment Default Sources Tpl
+templates:
+  - hyperdx/deployment.yaml
+values:
+  - values/deployment-tpl-defaults.yaml
+tests:
+  - it: should render tpl-interpolated default connections
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].env[?(@.name=="DEFAULT_CONNECTIONS")].value
+          pattern: clickhouse-headless
+```
+
+Prefer inline `set:` for small overrides; use `tests/values/` for multi-field
+fixtures or tpl-heavy defaults reused across assertions.
+
 ### Template Coverage (helmcov)
 
 ```bash
@@ -72,13 +93,13 @@ make coverage
 VERBOSE=1 make coverage
 
 # Gate on minimum line coverage once baseline is known
-COVERAGE_THRESHOLD=25 make coverage
+COVERAGE_THRESHOLD=30 make coverage
 
-# Pin a different image
-HELMCOV_IMAGE=ghcr.io/jordan-simonovski/helmcov:v0.3.2 make coverage
+# Override the pinned image (see scripts/tool-versions.env)
+HELMCOV_IMAGE=ghcr.io/example/helmcov@sha256:... make coverage
 ```
 
-Uses `ghcr.io/jordan-simonovski/helmcov:v0.3.2` by default with a **25% line
+Uses the digest-pinned image in `scripts/tool-versions.env` with a **30% line
 coverage threshold**. Outputs `coverage.out` (Go coverprofile) and `coverage.xml`
 (Cobertura). CI runs `make coverage` via `.github/workflows/helmcov.yaml`.
 

@@ -220,8 +220,7 @@ hyperdx:
   podDisruptionBudget:
     enabled: false
 
-  # -- HorizontalPodAutoscaler for HyperDX. spec is passed through verbatim (autoscaling/v2).
-  # Do not include scaleTargetRef — the chart auto-wires it. Omitting replicas when enabled.
+  # -- HorizontalPodAutoscaler for HyperDX. spec is passed through verbatim (autoscaling/v2). Do not include scaleTargetRef — the chart auto-wires it. When enabled, omit deployment.replicas; disabling autoscaling reverts to deployment.replicas (default 1).
   autoscaling:
     enabled: false
     spec: {}
