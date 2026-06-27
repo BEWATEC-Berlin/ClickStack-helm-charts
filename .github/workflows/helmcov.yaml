@@ -41,3 +41,4 @@ jobs:
           chart: charts/clickstack
           tests: charts/clickstack/tests
           threshold: "30"
+          version: v0.4.0
