@@ -328,6 +328,17 @@ clickhouse:
         image:
           repository: clickhouse/clickhouse-server
           tag: "25.7-alpine"
+        # Explicit resources for the ClickHouse server container. Without this
+        # the clickhouse-operator applies its own small default (512Mi memory,
+        # with request == limit as of operator v0.0.6), which is too low for the
+        # full ClickStack schema (many materialized views) and causes the server
+        # to OOMKill under ingestion + background merges. Override per environment.
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            memory: 2Gi
       replicas: 1
       shards: 1
       keeperClusterRef:
