@@ -328,11 +328,6 @@ clickhouse:
         image:
           repository: clickhouse/clickhouse-server
           tag: "25.7-alpine"
-        # Explicit resources for the ClickHouse server container. Without this
-        # the clickhouse-operator applies its own small default (512Mi memory,
-        # with request == limit as of operator v0.0.6), which is too low for the
-        # full ClickStack schema (many materialized views) and causes the server
-        # to OOMKill under ingestion + background merges. Override per environment.
         resources:
           requests:
             cpu: 500m
@@ -350,15 +345,8 @@ clickhouse:
           requests:
             storage: 10Gi
       settings:
-        # Disable the operator's database-sync feature (clickhouse-operator
-        # v0.0.6 defaults enableDatabaseSync: true). When enabled, the operator
-        # creates the `default` database with the Replicated (DatabaseReplicated)
-        # engine so table metadata lives in Keeper. That feature targets
-        # multi-replica clusters; in this single-replica deployment it only adds
-        # fragility -- a transient Keeper hiccup during startup desyncs the
-        # Replicated database and silently drops all seeded tables, which never
-        # come back. Keeping the `default` database Atomic stores tables on the
-        # persistent data volume so they survive restarts.
+        # Keep the `default` database Atomic; the Replicated engine the operator
+        # selects when this is true drops seeded tables on Keeper desync.
         enableDatabaseSync: false
         extraUsersConfig:
           users:
