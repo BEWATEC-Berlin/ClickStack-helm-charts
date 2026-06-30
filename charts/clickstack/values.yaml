@@ -350,6 +350,16 @@ clickhouse:
           requests:
             storage: 10Gi
       settings:
+        # Disable the operator's database-sync feature (clickhouse-operator
+        # v0.0.6 defaults enableDatabaseSync: true). When enabled, the operator
+        # creates the `default` database with the Replicated (DatabaseReplicated)
+        # engine so table metadata lives in Keeper. That feature targets
+        # multi-replica clusters; in this single-replica deployment it only adds
+        # fragility -- a transient Keeper hiccup during startup desyncs the
+        # Replicated database and silently drops all seeded tables, which never
+        # come back. Keeping the `default` database Atomic stores tables on the
+        # persistent data volume so they survive restarts.
+        enableDatabaseSync: false
         extraUsersConfig:
           users:
             app:
