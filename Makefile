@@ -1,14 +1,14 @@
 SHELL := /bin/bash
 
 include scripts/tool-versions.env
-export HELM_DOCS_VERSION HELMCOV_IMAGE
+export HELM_DOCS_VERSION HELMCOV_IMAGE HELMCOV_VERSION COVERAGE_THRESHOLD
 
 CHART ?= charts/clickstack
 HELM_UNITTEST_VERSION ?= v1.0.3
 HELM_UNITTEST_PLUGIN := https://github.com/helm-unittest/helm-unittest.git
-COVERAGE_THRESHOLD ?= 30
+# COVERAGE_THRESHOLD comes from scripts/tool-versions.env; override with `make coverage COVERAGE_THRESHOLD=N`.
 
-.PHONY: help setup hooks chart-deps install-helm-unittest install-helm-docs validate test coverage docs ci
+.PHONY: help setup ci-setup hooks chart-deps install-helm-unittest install-helm-docs validate test coverage docs docs-check ci
 
 help:
 	@echo "Targets:"
@@ -24,8 +24,10 @@ help:
 	@echo "  HELM_UNITTEST_VERSION=$(HELM_UNITTEST_VERSION)"
 	@echo "  COVERAGE_THRESHOLD=$(COVERAGE_THRESHOLD)"
 
-setup: hooks install-helm-unittest install-helm-docs chart-deps
+setup: hooks ci-setup
 	@echo "Setup complete."
+
+ci-setup: install-helm-unittest install-helm-docs chart-deps
 
 hooks:
 	./scripts/install-hooks.sh
@@ -61,5 +63,7 @@ coverage: chart-deps
 docs: install-helm-docs
 	./scripts/helmdocs.sh
 
-ci: test coverage docs
+docs-check: docs
 	@git diff --exit-code -- charts/clickstack/README.md charts/clickstack-operators/README.md
+
+ci: test coverage docs-check

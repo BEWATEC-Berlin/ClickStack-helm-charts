@@ -18,11 +18,11 @@ while IFS= read -r path; do
   case "${path}" in
     charts/*)
       chart_changes=true
-      case "${path}" in
-        charts/*/Chart.yaml|charts/*/values.yaml|charts/*/README.md.gotmpl|charts/*/templates/*|scripts/helmdocs.sh|scripts/install-helm-docs.sh)
-          docs_changes=true
-          ;;
-      esac
+      ;;
+  esac
+  case "${path}" in
+    charts/*/Chart.yaml|charts/*/values.yaml|charts/*/README.md.gotmpl|charts/*/templates/*|scripts/helmdocs.sh|scripts/install-helm-docs.sh)
+      docs_changes=true
       ;;
   esac
 done <<< "${staged}"
@@ -32,8 +32,7 @@ if [[ "${chart_changes}" == true ]]; then
 fi
 
 if [[ "${docs_changes}" == true ]]; then
-  make docs
-  if ! git diff --quiet -- charts/clickstack/README.md charts/clickstack-operators/README.md; then
+  if ! make docs-check; then
     echo "Chart README(s) are out of date. Run 'make docs' and stage the updated README.md files." >&2
     exit 1
   fi

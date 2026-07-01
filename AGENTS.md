@@ -13,10 +13,10 @@ Package manager: Yarn 4 (via Corepack). Versioning: Changesets.
 Use the Makefile for tool setup, unit tests, and template coverage:
 
 ```bash
-make setup      # install helm-unittest, chart deps, and git hooks
+make setup      # install helm-unittest, helm-docs, chart deps, and git hooks
 make test       # helm-unittest + example values validation
 make coverage   # helmcov template coverage via Docker (requires Docker)
-make ci         # test + coverage
+make ci         # test + coverage + docs verification
 ```
 
 The pre-commit hook runs `make test` when staged files under `charts/` change, and
@@ -207,7 +207,7 @@ tests:
 
 ## Shell Script Conventions
 
-- Always start with `#!/bin/bash`, `set -e`, and `set -o pipefail`
+- Always start with `#!/usr/bin/env bash` and `set -euo pipefail`
 - Use uppercase for exported env vars: `RELEASE_NAME`, `NAMESPACE`, `SUITE_DIR`
 - Use functions for reusable logic (see `smoke-test.sh`, `run-suite.sh`)
 - Default variables with `${VAR:-default}` or `${1:?Usage message}`
@@ -216,8 +216,7 @@ tests:
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
-| Helm Chart Tests | `helm-test.yaml` | push/PR to main | Unit tests + example validation |
-| Helm Template Coverage | `helmcov.yaml` | push/PR to main | helmcov action; PR comment with line/branch coverage |
+| Helm Chart Tests | `helm-test.yaml` | push/PR to main | `helm-unittest` job (unit tests + example validation + docs check) and `helmcov` job (template coverage; PR comment with line/branch coverage) |
 | Integration Test | `chart-test.yml` | push/PR/nightly | Kind-based integration suites |
 | Release | `release.yml` | after tests pass on main | Changeset version + chart release |
 | Update App Version | `update-app-version.yml` | workflow_dispatch | Bump `appVersion` in Chart.yaml |
