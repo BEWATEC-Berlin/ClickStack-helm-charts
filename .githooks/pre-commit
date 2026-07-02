@@ -31,6 +31,14 @@ if [[ "${chart_changes}" != true && "${docs_changes}" != true ]]; then
   exit 0
 fi
 
+# Contributors without Helm can't run the chart checks; warn rather than block
+# the commit. CI still enforces tests and docs on the PR.
+if ! command -v helm >/dev/null 2>&1; then
+  echo "pre-commit: helm not found; skipping chart tests and docs check (CI will enforce them)." >&2
+  echo "pre-commit: install Helm 3, or bypass this hook with 'git commit --no-verify'." >&2
+  exit 0
+fi
+
 # Validate the staged snapshot, not the working tree: stash unstaged/untracked
 # changes (keeping the index applied) so make runs against exactly what's being
 # committed. Restore the tree afterwards no matter how we exit.
@@ -43,7 +51,11 @@ fi
 restore() {
   rc=$?
   git checkout -- . >/dev/null 2>&1 || true          # drop anything make regenerated
-  [[ "${stashed}" == true ]] && git stash pop --quiet >/dev/null 2>&1 || true
+  if [[ "${stashed}" == true ]] && ! git stash pop --quiet; then
+    echo "pre-commit: FAILED to restore your unstaged/untracked changes." >&2
+    echo "pre-commit: they are safe in the stash — recover with 'git stash list' then 'git stash pop'." >&2
+    rc=1
+  fi
   exit "${rc}"
 }
 trap restore EXIT

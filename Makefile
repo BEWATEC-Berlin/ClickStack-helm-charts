@@ -1,10 +1,9 @@
 SHELL := /bin/bash
 
 include scripts/tool-versions.env
-export HELM_DOCS_VERSION HELMCOV_IMAGE HELMCOV_VERSION COVERAGE_THRESHOLD
+export HELM_DOCS_VERSION HELM_UNITTEST_VERSION HELMCOV_IMAGE HELMCOV_VERSION COVERAGE_THRESHOLD
 
 CHART ?= charts/clickstack
-HELM_UNITTEST_VERSION ?= v1.0.3
 HELM_UNITTEST_PLUGIN := https://github.com/helm-unittest/helm-unittest.git
 # COVERAGE_THRESHOLD comes from scripts/tool-versions.env; override with `make coverage COVERAGE_THRESHOLD=N`.
 
@@ -43,9 +42,12 @@ chart-deps:
 
 install-helm-unittest:
 	@command -v helm >/dev/null || { echo "helm is required; install Helm 3 first." >&2; exit 1; }
-	@if helm plugin list 2>/dev/null | awk '{print $$1}' | grep -qx unittest; then \
-		echo "helm-unittest already installed"; \
+	@want="$(HELM_UNITTEST_VERSION:v%=%)"; \
+	installed=$$(helm plugin list 2>/dev/null | awk '$$1=="unittest"{print $$2}'); \
+	if [ "$$installed" = "$$want" ]; then \
+		echo "helm-unittest $(HELM_UNITTEST_VERSION) already installed"; \
 	else \
+		[ -n "$$installed" ] && { echo "Replacing helm-unittest $$installed with $(HELM_UNITTEST_VERSION)..."; helm plugin uninstall unittest >/dev/null 2>&1 || true; } || true; \
 		echo "Installing helm-unittest $(HELM_UNITTEST_VERSION)..."; \
 		helm plugin install $(HELM_UNITTEST_PLUGIN) --version $(HELM_UNITTEST_VERSION); \
 	fi

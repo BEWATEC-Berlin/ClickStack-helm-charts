@@ -42,15 +42,28 @@ helmcov_args=(
   --seed "${SEED}"
 )
 
-if [[ "${THRESHOLD}" != "0" ]]; then
-  helmcov_args+=(--threshold "${THRESHOLD}")
+# The threshold is the coverage gate; refuse to run with it disabled (0/empty)
+# so a config change can't silently neutralize enforcement.
+if [[ -z "${THRESHOLD}" || "${THRESHOLD}" == "0" ]]; then
+  echo "COVERAGE_THRESHOLD must be a positive integer; refusing to run with the coverage gate disabled." >&2
+  exit 1
 fi
+helmcov_args+=(--threshold "${THRESHOLD}")
 if [[ "${VERBOSE}" == "1" ]]; then
   helmcov_args+=(--verbose)
 fi
 
+# The helmcov image is amd64-only. On amd64 hosts run natively; elsewhere force
+# emulation (slower) rather than letting docker fail on a missing arch variant.
+platform_args=()
+host_arch="$(uname -m)"
+if [[ "${host_arch}" != "x86_64" && "${host_arch}" != "amd64" ]]; then
+  echo "helmcov image is amd64-only; running under emulation on ${host_arch} (slower)." >&2
+  platform_args=(--platform linux/amd64)
+fi
+
 docker run --rm \
-  --platform linux/amd64 \
+  ${platform_args[@]+"${platform_args[@]}"} \
   --user "$(id -u):$(id -g)" \
   -v "${ROOT_DIR}:/work" \
   -w /work \

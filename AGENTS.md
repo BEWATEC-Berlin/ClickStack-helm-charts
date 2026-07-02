@@ -104,8 +104,8 @@ coverage threshold** for local runs. Outputs `coverage.out` (Go coverprofile) an
 `coverage.xml` (Cobertura).
 
 CI runs the [helmcov GitHub Action](https://github.com/jordan-simonovski/helmcov)
-via `.github/workflows/helmcov.yaml`, which posts or updates a pull request
-comment with line/branch coverage and uncovered details.
+via the `helmcov` job in `.github/workflows/helm-test.yaml`, which posts or updates
+a pull request comment with line/branch coverage and uncovered details.
 
 ### Chart README (helm-docs)
 
