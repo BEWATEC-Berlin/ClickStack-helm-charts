@@ -1,3 +1,4 @@
+{{- include "clickstack.validateHyperdxDefaultConnections" . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -110,34 +111,13 @@ spec:
           envFrom:
             - configMapRef:
                 name: clickstack-config
-            {{- if ne .Values.hyperdx.secrets nil }}
+            {{- if include "clickstack.hyperdx.hasSecret" . }}
             - secretRef:
-                name: clickstack-secret
+                name: {{ include "clickstack.hyperdx.secretName" . }}
             {{- end }}
           env:
-            {{- if .Values.hyperdx.deployment.useExistingConfigSecret }}
-            - name: DEFAULT_CONNECTIONS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.hyperdx.deployment.existingConfigSecret | quote }}
-                  key: {{ .Values.hyperdx.deployment.existingConfigConnectionsKey | quote }}
-                  optional: false
-            - name: DEFAULT_SOURCES
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.hyperdx.deployment.existingConfigSecret | quote }}
-                  key: {{ .Values.hyperdx.deployment.existingConfigSourcesKey | quote }}
-                  optional: false
-            {{- else }}
-            {{- if and .Values.hyperdx.deployment.defaultConnections (ne .Values.hyperdx.secrets nil) }}
-            - name: DEFAULT_CONNECTIONS
-              value: {{ tpl .Values.hyperdx.deployment.defaultConnections . | quote }}
-            {{- end }}
-            {{- if .Values.hyperdx.deployment.defaultSources }}
-            - name: DEFAULT_SOURCES
-              value: {{ tpl .Values.hyperdx.deployment.defaultSources . | quote }}
-            {{- end }}
-            {{- end }}
+            {{- include "clickstack.hyperdx.configSecretEnv" . | nindent 12 }}
+            {{- include "clickstack.hyperdx.defaultConfigEnv" . | nindent 12 }}
             {{- with .Values.hyperdx.deployment.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

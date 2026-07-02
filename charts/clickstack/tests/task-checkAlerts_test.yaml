@@ -66,6 +66,54 @@ tests:
             name: OTEL_SERVICE_NAME
             value: "hdx-oss-task-check-alerts"
 
+  - it: should use externally managed shared and config Secrets when tasks are enabled
+    set:
+      hyperdx:
+        secrets: null
+        existingSecret:
+          name: managed-clickstack-secret
+        configSecretRefs:
+          MONGO_URI:
+            name: managed-clickstack-config
+            key: mongo-uri
+        tasks:
+          enabled: true
+        deployment:
+          useExistingConfigSecret: true
+          existingConfigSecret: managed-clickstack-config
+          existingConfigConnectionsKey: connections.json
+          existingConfigSourcesKey: sources.json
+      otel-collector:
+        extraEnvsFrom:
+          - configMapRef:
+              name: clickstack-config
+          - secretRef:
+              name: managed-clickstack-secret
+    asserts:
+      - isSubset:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom[1]
+          content:
+            secretRef:
+              name: managed-clickstack-secret
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: MONGO_URI
+            valueFrom:
+              secretKeyRef:
+                name: managed-clickstack-config
+                key: mongo-uri
+                optional: false
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: DEFAULT_CONNECTIONS
+            valueFrom:
+              secretKeyRef:
+                name: managed-clickstack-config
+                key: connections.json
+                optional: false
+
   - it: should use default schedule when not provided
     set:
       hyperdx:

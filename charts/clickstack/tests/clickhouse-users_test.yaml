@@ -32,3 +32,58 @@ tests:
       - equal:
           path: spec.settings.extraUsersConfig.users.otelcollector.password
           value: "test-otel-pass"
+
+  - it: should use externally managed user password Secret when configured
+    set:
+      clickhouse:
+        existingUserPasswordSecret:
+          name: managed-clickhouse-users
+          appPasswordKey: app-password
+          otelCollectorPasswordKey: otel-password
+    asserts:
+      - equal:
+          path: spec.settings.extraUsersConfig.users.app.password.valueFrom.secretKeyRef.name
+          value: managed-clickhouse-users
+      - equal:
+          path: spec.settings.extraUsersConfig.users.app.password.valueFrom.secretKeyRef.key
+          value: app-password
+      - equal:
+          path: spec.settings.extraUsersConfig.users.otelcollector.password.valueFrom.secretKeyRef.name
+          value: managed-clickhouse-users
+      - equal:
+          path: spec.settings.extraUsersConfig.users.otelcollector.password.valueFrom.secretKeyRef.key
+          value: otel-password
+
+  - it: should fail when existing shared Secret mode does not externalize ClickHouse user passwords
+    set:
+      hyperdx:
+        secrets: null
+        existingSecret:
+          name: managed-clickstack-secret
+    asserts:
+      - failedTemplate:
+          errorMessage: "clickhouse.existingUserPasswordSecret.name is required when hyperdx.existingSecret.name is set and clickhouse is enabled"
+
+  - it: should not create missing default users when externally managed user password Secret is configured
+    set:
+      clickhouse:
+        existingUserPasswordSecret:
+          name: managed-clickhouse-users
+        cluster:
+          spec:
+            settings:
+              extraUsersConfig:
+                users:
+                  app: null
+                  otelcollector: null
+                  custom:
+                    profile: default
+                    password: custom-password
+    asserts:
+      - notExists:
+          path: spec.settings.extraUsersConfig.users.app
+      - notExists:
+          path: spec.settings.extraUsersConfig.users.otelcollector
+      - equal:
+          path: spec.settings.extraUsersConfig.users.custom.password
+          value: custom-password

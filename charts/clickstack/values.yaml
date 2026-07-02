@@ -53,6 +53,25 @@ hyperdx:
     CLICKHOUSE_APP_PASSWORD: "hyperdx"
     MONGODB_PASSWORD: "hyperdx"
 
+  # Reference an externally managed Secret for HyperDX and OTEL envFrom values.
+  # When name is set, the chart does not create clickstack-secret and consumers
+  # reference this Secret instead.
+  # If otel-collector.enabled is true and this name differs from
+  # clickstack-secret, also override otel-collector.extraEnvsFrom to reference
+  # the same Secret.
+  existingSecret:
+    name: ""
+
+  # Move selected config keys from clickstack-config into Secret-backed env vars.
+  # Keys listed here are omitted from the ConfigMap and rendered as valueFrom
+  # entries on HyperDX workloads.
+  # Example:
+  # configSecretRefs:
+  #   MONGO_URI:
+  #     name: clickstack-config-secret
+  #     key: mongo-uri
+  configSecretRefs: {}
+
   # ── K8s Deployment ───────────────────────────────────────
   deployment:
     image:
@@ -277,6 +296,11 @@ hyperdx:
 
 mongodb:
   enabled: true
+  # Reference an externally managed MongoDB password Secret. The Secret must
+  # contain key "password" because MongoDBCommunity passwordSecretRef only
+  # selects the Secret name.
+  existingPasswordSecret:
+    name: ""
   # Full MongoDBCommunity CRD spec -- rendered verbatim into the CR.
   # See https://github.com/mongodb/mongodb-kubernetes/tree/master/docs/mongodbcommunity
   # for all available fields. Add persistence, nodeSelector, tolerations, etc. here.
@@ -303,6 +327,12 @@ mongodb:
 
 clickhouse:
   enabled: true
+  # Reference externally managed ClickHouse user passwords for the default
+  # app and otelcollector users.
+  existingUserPasswordSecret:
+    name: ""
+    appPasswordKey: CLICKHOUSE_APP_PASSWORD
+    otelCollectorPasswordKey: CLICKHOUSE_PASSWORD
   # Ports used for cross-service wiring (defaultConnections)
   port: 8123
   nativePort: 9000

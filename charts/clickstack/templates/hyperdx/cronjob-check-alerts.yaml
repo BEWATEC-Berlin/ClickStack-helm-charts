@@ -1,4 +1,5 @@
 {{- if .Values.hyperdx.tasks.enabled }}
+{{- include "clickstack.validateHyperdxDefaultConnections" . }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -49,9 +50,13 @@ spec:
               envFrom:
                 - configMapRef:
                     name: clickstack-config
+                {{- if include "clickstack.hyperdx.hasSecret" . }}
                 - secretRef:
-                    name: clickstack-secret
+                    name: {{ include "clickstack.hyperdx.secretName" . }}
+                {{- end }}
               env:
+                {{- include "clickstack.hyperdx.configSecretEnv" . | nindent 16 }}
+                {{- include "clickstack.hyperdx.defaultConfigEnv" . | nindent 16 }}
                 - name: NODE_ENV
                   value: "production"
                 - name: OTEL_SERVICE_NAME

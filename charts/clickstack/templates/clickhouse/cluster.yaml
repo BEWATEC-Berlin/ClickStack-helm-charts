@@ -1,4 +1,24 @@
 {{- if .Values.clickhouse.enabled }}
+{{- include "clickstack.validateClickHouseExistingSecret" . }}
+{{- $spec := deepCopy .Values.clickhouse.cluster.spec }}
+{{- if .Values.clickhouse.existingUserPasswordSecret.name }}
+{{- $settings := get $spec "settings" | default dict }}
+{{- $extraUsersConfig := get $settings "extraUsersConfig" | default dict }}
+{{- $users := get $extraUsersConfig "users" | default dict }}
+{{- if hasKey $users "app" }}
+{{- $app := get $users "app" | default dict }}
+{{- $_ := set $app "password" (dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.clickhouse.existingUserPasswordSecret.name "key" .Values.clickhouse.existingUserPasswordSecret.appPasswordKey))) }}
+{{- $_ := set $users "app" $app }}
+{{- end }}
+{{- if hasKey $users "otelcollector" }}
+{{- $otelcollector := get $users "otelcollector" | default dict }}
+{{- $_ := set $otelcollector "password" (dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.clickhouse.existingUserPasswordSecret.name "key" .Values.clickhouse.existingUserPasswordSecret.otelCollectorPasswordKey))) }}
+{{- $_ := set $users "otelcollector" $otelcollector }}
+{{- end }}
+{{- $_ := set $extraUsersConfig "users" $users }}
+{{- $_ := set $settings "extraUsersConfig" $extraUsersConfig }}
+{{- $_ := set $spec "settings" $settings }}
+{{- end }}
 apiVersion: clickhouse.com/v1alpha1
 kind: ClickHouseCluster
 metadata:
@@ -6,5 +26,5 @@ metadata:
   labels:
     {{- include "clickstack.labels" . | nindent 4 }}
 spec:
-  {{- tpl (toYaml .Values.clickhouse.cluster.spec) . | nindent 2 }}
+  {{- tpl (toYaml $spec) . | nindent 2 }}
 {{- end }}

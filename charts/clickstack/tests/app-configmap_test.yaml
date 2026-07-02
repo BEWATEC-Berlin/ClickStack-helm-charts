@@ -57,3 +57,23 @@ tests:
       - matchRegex:
           path: data.OTEL_EXPORTER_OTLP_ENDPOINT
           pattern: "http://.*-otel-collector:4318"
+
+  - it: should omit config values that are supplied from a Secret
+    set:
+      hyperdx:
+        configSecretRefs:
+          MONGO_URI:
+            name: managed-clickstack-config
+            key: mongo-uri
+    asserts:
+      - notExists:
+          path: data.MONGO_URI
+
+  - it: should fail when existing shared Secret mode would render default MONGO_URI
+    set:
+      hyperdx:
+        existingSecret:
+          name: managed-clickstack-secret
+    asserts:
+      - failedTemplate:
+          errorMessage: "hyperdx.configSecretRefs.MONGO_URI is required when hyperdx.existingSecret.name is set and hyperdx.config.MONGO_URI uses hyperdx.secrets"

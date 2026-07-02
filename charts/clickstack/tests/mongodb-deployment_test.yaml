@@ -53,6 +53,18 @@ tests:
           path: spec.users[0].scramCredentialsSecretName
           pattern: .*-mongodb-scram$
 
+  - it: should use externally managed password Secret when configured
+    templates:
+      - mongodb/community.yaml
+    set:
+      mongodb:
+        existingPasswordSecret:
+          name: managed-mongodb-password
+    asserts:
+      - equal:
+          path: spec.users[0].passwordSecretRef.name
+          value: managed-mongodb-password
+
   - it: should allow overriding spec values
     templates:
       - mongodb/community.yaml
@@ -131,3 +143,39 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: should not validate external password Secret when MongoDB is disabled
+    templates:
+      - mongodb/password-secret.yaml
+    set:
+      hyperdx:
+        existingSecret:
+          name: managed-clickstack-secret
+      mongodb:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render password Secret when externally managed Secret is configured
+    templates:
+      - mongodb/password-secret.yaml
+    set:
+      mongodb:
+        existingPasswordSecret:
+          name: managed-mongodb-password
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should fail when existing shared Secret mode does not externalize MongoDB password
+    templates:
+      - mongodb/password-secret.yaml
+    set:
+      hyperdx:
+        secrets: null
+        existingSecret:
+          name: managed-clickstack-secret
+    asserts:
+      - failedTemplate:
+          errorMessage: "mongodb.existingPasswordSecret.name is required when hyperdx.existingSecret.name is set and mongodb is enabled"
