@@ -328,7 +328,9 @@ mongodb:
 clickhouse:
   enabled: true
   # Reference externally managed ClickHouse user passwords for the default
-  # app and otelcollector users.
+  # app and otelcollector users. The chart injects these keys into the
+  # ClickHouse server container and renders user passwords with ClickHouse
+  # from_env substitutions.
   existingUserPasswordSecret:
     name: ""
     appPasswordKey: CLICKHOUSE_APP_PASSWORD
