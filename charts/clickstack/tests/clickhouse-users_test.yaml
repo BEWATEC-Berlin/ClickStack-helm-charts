@@ -42,17 +42,27 @@ tests:
           otelCollectorPasswordKey: otel-password
     asserts:
       - equal:
-          path: spec.settings.extraUsersConfig.users.app.password.valueFrom.secretKeyRef.name
-          value: managed-clickhouse-users
+          path: spec.settings.extraUsersConfig.users.app.password.@from_env
+          value: CLICKHOUSE_APP_PASSWORD
       - equal:
-          path: spec.settings.extraUsersConfig.users.app.password.valueFrom.secretKeyRef.key
-          value: app-password
-      - equal:
-          path: spec.settings.extraUsersConfig.users.otelcollector.password.valueFrom.secretKeyRef.name
-          value: managed-clickhouse-users
-      - equal:
-          path: spec.settings.extraUsersConfig.users.otelcollector.password.valueFrom.secretKeyRef.key
-          value: otel-password
+          path: spec.settings.extraUsersConfig.users.otelcollector.password.@from_env
+          value: CLICKHOUSE_PASSWORD
+      - contains:
+          path: spec.containerTemplate.env
+          content:
+            name: CLICKHOUSE_APP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: managed-clickhouse-users
+                key: app-password
+      - contains:
+          path: spec.containerTemplate.env
+          content:
+            name: CLICKHOUSE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: managed-clickhouse-users
+                key: otel-password
 
   - it: should fail when existing shared Secret mode does not externalize ClickHouse user passwords
     set:
@@ -87,3 +97,35 @@ tests:
       - equal:
           path: spec.settings.extraUsersConfig.users.custom.password
           value: custom-password
+      - notExists:
+          path: spec.containerTemplate.env
+
+  - it: should fail when app password env is already defined
+    set:
+      clickhouse:
+        existingUserPasswordSecret:
+          name: managed-clickhouse-users
+        cluster:
+          spec:
+            containerTemplate:
+              env:
+                - name: CLICKHOUSE_APP_PASSWORD
+                  value: custom
+    asserts:
+      - failedTemplate:
+          errorMessage: "clickhouse.cluster.spec.containerTemplate.env must not define CLICKHOUSE_APP_PASSWORD when clickhouse.existingUserPasswordSecret.name is set and the app user is managed"
+
+  - it: should fail when otelcollector password env is already defined
+    set:
+      clickhouse:
+        existingUserPasswordSecret:
+          name: managed-clickhouse-users
+        cluster:
+          spec:
+            containerTemplate:
+              env:
+                - name: CLICKHOUSE_PASSWORD
+                  value: custom
+    asserts:
+      - failedTemplate:
+          errorMessage: "clickhouse.cluster.spec.containerTemplate.env must not define CLICKHOUSE_PASSWORD when clickhouse.existingUserPasswordSecret.name is set and the otelcollector user is managed"

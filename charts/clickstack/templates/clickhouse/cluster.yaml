@@ -5,16 +5,38 @@
 {{- $settings := get $spec "settings" | default dict }}
 {{- $extraUsersConfig := get $settings "extraUsersConfig" | default dict }}
 {{- $users := get $extraUsersConfig "users" | default dict }}
+{{- $containerTemplate := get $spec "containerTemplate" | default dict }}
+{{- $env := get $containerTemplate "env" | default list }}
+{{- $envNames := dict }}
+{{- range $envVar := $env }}
+{{- with get $envVar "name" }}
+{{- $_ := set $envNames . true }}
+{{- end }}
+{{- end }}
 {{- if hasKey $users "app" }}
+{{- if hasKey $envNames "CLICKHOUSE_APP_PASSWORD" }}
+{{- fail "clickhouse.cluster.spec.containerTemplate.env must not define CLICKHOUSE_APP_PASSWORD when clickhouse.existingUserPasswordSecret.name is set and the app user is managed" }}
+{{- end }}
 {{- $app := get $users "app" | default dict }}
-{{- $_ := set $app "password" (dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.clickhouse.existingUserPasswordSecret.name "key" .Values.clickhouse.existingUserPasswordSecret.appPasswordKey))) }}
+{{- $_ := set $app "password" (dict "@from_env" "CLICKHOUSE_APP_PASSWORD") }}
 {{- $_ := set $users "app" $app }}
+{{- $env = append $env (dict "name" "CLICKHOUSE_APP_PASSWORD" "valueFrom" (dict "secretKeyRef" (dict "name" .Values.clickhouse.existingUserPasswordSecret.name "key" .Values.clickhouse.existingUserPasswordSecret.appPasswordKey))) }}
+{{- $_ := set $envNames "CLICKHOUSE_APP_PASSWORD" true }}
 {{- end }}
 {{- if hasKey $users "otelcollector" }}
-{{- $otelcollector := get $users "otelcollector" | default dict }}
-{{- $_ := set $otelcollector "password" (dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.clickhouse.existingUserPasswordSecret.name "key" .Values.clickhouse.existingUserPasswordSecret.otelCollectorPasswordKey))) }}
-{{- $_ := set $users "otelcollector" $otelcollector }}
+{{- if hasKey $envNames "CLICKHOUSE_PASSWORD" }}
+{{- fail "clickhouse.cluster.spec.containerTemplate.env must not define CLICKHOUSE_PASSWORD when clickhouse.existingUserPasswordSecret.name is set and the otelcollector user is managed" }}
 {{- end }}
+{{- $otelcollector := get $users "otelcollector" | default dict }}
+{{- $_ := set $otelcollector "password" (dict "@from_env" "CLICKHOUSE_PASSWORD") }}
+{{- $_ := set $users "otelcollector" $otelcollector }}
+{{- $env = append $env (dict "name" "CLICKHOUSE_PASSWORD" "valueFrom" (dict "secretKeyRef" (dict "name" .Values.clickhouse.existingUserPasswordSecret.name "key" .Values.clickhouse.existingUserPasswordSecret.otelCollectorPasswordKey))) }}
+{{- $_ := set $envNames "CLICKHOUSE_PASSWORD" true }}
+{{- end }}
+{{- if or (gt (len $env) 0) (hasKey $containerTemplate "env") }}
+{{- $_ := set $containerTemplate "env" $env }}
+{{- end }}
+{{- $_ := set $spec "containerTemplate" $containerTemplate }}
 {{- $_ := set $extraUsersConfig "users" $users }}
 {{- $_ := set $settings "extraUsersConfig" $extraUsersConfig }}
 {{- $_ := set $spec "settings" $settings }}
