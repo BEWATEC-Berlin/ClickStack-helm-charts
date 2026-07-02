@@ -102,3 +102,104 @@ ClickHouse headless service name. The operator creates a headless service named 
 {{- define "clickstack.clickhouse.svc" -}}
 {{- printf "%s-clickhouse-headless" (include "clickstack.clickhouse.fullname" .) -}}
 {{- end }}
+
+{{/*
+Shared HyperDX Secret name. Defaults to the chart-created clickstack-secret,
+or uses hyperdx.existingSecret.name when provided.
+*/}}
+{{- define "clickstack.hyperdx.secretName" -}}
+{{- default "clickstack-secret" .Values.hyperdx.existingSecret.name -}}
+{{- end }}
+
+{{/*
+Whether HyperDX workloads should reference a shared Secret.
+*/}}
+{{- define "clickstack.hyperdx.hasSecret" -}}
+{{- if or (ne .Values.hyperdx.secrets nil) .Values.hyperdx.existingSecret.name -}}
+true
+{{- end -}}
+{{- end }}
+
+{{/*
+Render env entries for config keys supplied by externally managed Secrets.
+*/}}
+{{- define "clickstack.hyperdx.configSecretEnv" -}}
+{{- range $name, $ref := (.Values.hyperdx.configSecretRefs | default dict) }}
+- name: {{ $name }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ required (printf "hyperdx.configSecretRefs.%s.name is required" $name) $ref.name | quote }}
+      key: {{ default $name $ref.key | quote }}
+      optional: {{ default false $ref.optional }}
+{{- end }}
+{{- end }}
+
+{{/*
+Render DEFAULT_CONNECTIONS and DEFAULT_SOURCES env entries.
+*/}}
+{{- define "clickstack.hyperdx.defaultConfigEnv" -}}
+{{- if .Values.hyperdx.deployment.useExistingConfigSecret }}
+- name: DEFAULT_CONNECTIONS
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.hyperdx.deployment.existingConfigSecret | quote }}
+      key: {{ .Values.hyperdx.deployment.existingConfigConnectionsKey | quote }}
+      optional: false
+- name: DEFAULT_SOURCES
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.hyperdx.deployment.existingConfigSecret | quote }}
+      key: {{ .Values.hyperdx.deployment.existingConfigSourcesKey | quote }}
+      optional: false
+{{- else }}
+{{- if and .Values.hyperdx.deployment.defaultConnections (ne .Values.hyperdx.secrets nil) }}
+- name: DEFAULT_CONNECTIONS
+  value: {{ tpl .Values.hyperdx.deployment.defaultConnections . | quote }}
+{{- end }}
+{{- if .Values.hyperdx.deployment.defaultSources }}
+- name: DEFAULT_SOURCES
+  value: {{ tpl .Values.hyperdx.deployment.defaultSources . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Validate that existing shared Secret mode does not render the default Mongo URI
+from hyperdx.secrets into clickstack-config.
+*/}}
+{{- define "clickstack.validateHyperdxConfigSecretRefs" -}}
+{{- $configSecretRefs := .Values.hyperdx.configSecretRefs | default dict -}}
+{{- $mongoURI := get (.Values.hyperdx.config | default dict) "MONGO_URI" | default "" -}}
+{{- if and .Values.hyperdx.existingSecret.name (contains ".Values.hyperdx.secrets" (toString $mongoURI)) (not (hasKey $configSecretRefs "MONGO_URI")) -}}
+{{- fail "hyperdx.configSecretRefs.MONGO_URI is required when hyperdx.existingSecret.name is set and hyperdx.config.MONGO_URI uses hyperdx.secrets" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Validate that existing shared Secret mode does not render DEFAULT_CONNECTIONS
+from hyperdx.secrets into HyperDX workloads.
+*/}}
+{{- define "clickstack.validateHyperdxDefaultConnections" -}}
+{{- $defaultConnections := .Values.hyperdx.deployment.defaultConnections | default "" -}}
+{{- if and .Values.hyperdx.existingSecret.name (contains ".Values.hyperdx.secrets" (toString $defaultConnections)) (not .Values.hyperdx.deployment.useExistingConfigSecret) -}}
+{{- fail "hyperdx.deployment.useExistingConfigSecret is required when hyperdx.existingSecret.name is set and hyperdx.deployment.defaultConnections uses hyperdx.secrets" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Validate MongoDB password bridge externalization in existing shared Secret mode.
+*/}}
+{{- define "clickstack.validateMongoDBExistingSecret" -}}
+{{- if and .Values.hyperdx.existingSecret.name .Values.mongodb.enabled (not .Values.mongodb.existingPasswordSecret.name) -}}
+{{- fail "mongodb.existingPasswordSecret.name is required when hyperdx.existingSecret.name is set and mongodb is enabled" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Validate ClickHouse user password externalization in existing shared Secret mode.
+*/}}
+{{- define "clickstack.validateClickHouseExistingSecret" -}}
+{{- if and .Values.hyperdx.existingSecret.name .Values.clickhouse.enabled (not .Values.clickhouse.existingUserPasswordSecret.name) -}}
+{{- fail "clickhouse.existingUserPasswordSecret.name is required when hyperdx.existingSecret.name is set and clickhouse is enabled" -}}
+{{- end -}}
+{{- end }}

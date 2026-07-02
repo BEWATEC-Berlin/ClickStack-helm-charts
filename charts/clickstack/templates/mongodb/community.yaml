@@ -1,4 +1,15 @@
 {{- if .Values.mongodb.enabled }}
+{{- include "clickstack.validateMongoDBExistingSecret" . }}
+{{- $spec := deepCopy .Values.mongodb.spec }}
+{{- if .Values.mongodb.existingPasswordSecret.name }}
+{{- $users := get $spec "users" | default list }}
+{{- if gt (len $users) 0 }}
+{{- $user := index $users 0 }}
+{{- $passwordSecretRef := get $user "passwordSecretRef" | default dict }}
+{{- $_ := set $passwordSecretRef "name" .Values.mongodb.existingPasswordSecret.name }}
+{{- $_ := set $user "passwordSecretRef" $passwordSecretRef }}
+{{- end }}
+{{- end }}
 apiVersion: mongodbcommunity.mongodb.com/v1
 kind: MongoDBCommunity
 metadata:
@@ -6,5 +17,5 @@ metadata:
   labels:
     {{- include "clickstack.labels" . | nindent 4 }}
 spec:
-  {{- tpl (toYaml .Values.mongodb.spec) . | nindent 2 }}
+  {{- tpl (toYaml $spec) . | nindent 2 }}
 {{- end }}

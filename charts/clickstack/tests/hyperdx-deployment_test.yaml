@@ -32,6 +32,50 @@ tests:
             secretRef:
               name: clickstack-secret
 
+  - it: should use externally managed shared and config Secrets when configured
+    set:
+      hyperdx:
+        secrets: null
+        existingSecret:
+          name: managed-clickstack-secret
+        configSecretRefs:
+          MONGO_URI:
+            name: managed-clickstack-config
+            key: mongo-uri
+        deployment:
+          useExistingConfigSecret: true
+          existingConfigSecret: managed-clickstack-config
+      otel-collector:
+        extraEnvsFrom:
+          - configMapRef:
+              name: clickstack-config
+          - secretRef:
+              name: managed-clickstack-secret
+    asserts:
+      - isSubset:
+          path: spec.template.spec.containers[0].envFrom[1]
+          content:
+            secretRef:
+              name: managed-clickstack-secret
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MONGO_URI
+            valueFrom:
+              secretKeyRef:
+                name: managed-clickstack-config
+                key: mongo-uri
+                optional: false
+
+  - it: should fail when existing shared Secret mode would render default connections
+    set:
+      hyperdx:
+        existingSecret:
+          name: managed-clickstack-secret
+    asserts:
+      - failedTemplate:
+          errorMessage: "hyperdx.deployment.useExistingConfigSecret is required when hyperdx.existingSecret.name is set and hyperdx.deployment.defaultConnections uses hyperdx.secrets"
+
   - it: should set custom replicas when provided
     set:
       hyperdx:

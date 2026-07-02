@@ -1,3 +1,4 @@
+{{- include "clickstack.validateHyperdxConfigSecretRefs" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,6 +6,9 @@ metadata:
   labels:
     {{- include "clickstack.labels" . | nindent 4 }}
 data:
+  {{- $configSecretRefs := .Values.hyperdx.configSecretRefs | default dict }}
   {{- range $k, $v := .Values.hyperdx.config }}
+  {{- if not (hasKey $configSecretRefs $k) }}
   {{ $k }}: {{ tpl (toString $v) $ | quote }}
+  {{- end }}
   {{- end }}
