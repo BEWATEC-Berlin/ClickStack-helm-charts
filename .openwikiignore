@@ -1,0 +1,29 @@
+# Local state and anything that may carry credentials.
+.env
+.env.*
+!.env.example
+kubeconfig*
+*.pem
+*.key
+.act/
+
+# Dependencies, packaged subcharts, JS lock files, generated test snapshots.
+# Helm Chart.lock files stay indexed: they pin the subchart versions.
+node_modules/
+.yarn/
+yarn.lock
+charts/*/charts/
+charts/*/tests/__snapshot__/
+
+# Upstream-only material: release history, repo automation, local e2e tooling.
+CHANGELOG.md
+LICENSE
+.kodiak.toml
+scripts/e2e/
+
+# Agent and editor tooling.
+.claude/
+.codex/
+.mcp.json
+.vscode/
+.idea/

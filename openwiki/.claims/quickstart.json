@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:1f19dd2110ed5016e0e489f30cc84e0327515ed249709f10bc99bc9ac71138c4",
+  "claims": [
+    {
+      "id": "claim_af0cc775110b4c2ea2cd0775a73ee58b",
+      "statement": "The repository holds two charts: charts/clickstack (HyperDX, OpenTelemetry Collector and operator custom resources) and charts/clickstack-operators (MongoDB and ClickHouse operators and CRDs).",
+      "evidence": [
+        {
+          "resource": "repo://README.md",
+          "version": "repo-file-v1:sha256:45d420ae1ce4ebf547694db3e9c52e577393d5dde3133fa4dff8930c1e458f79"
+        },
+        {
+          "resource": "repo://charts/clickstack-operators/Chart.yaml",
+          "version": "repo-file-v1:sha256:d6d9c440d503276589df40652473e9f31ef2726a42a91300dcda2e1879971d39"
+        },
+        {
+          "resource": "repo://charts/clickstack/Chart.yaml",
+          "version": "repo-file-v1:sha256:f62569a2160726ed6e6132458cd4e021473934f0903a4f1009310a4bc4919b68"
+        }
+      ]
+    },
+    {
+      "id": "claim_3cfe7922c7b44a10ba8dbf713683308b",
+      "statement": "Unit tests run locally with helm unittest charts/clickstack from charts/clickstack/tests.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md",
+          "version": "repo-file-v1:sha256:f14304e88e01f271aa1479d0309a8df8552ce5e4b519360bc6d3d6b61c2edcd7"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.9.0",
+    "at": "2026-11-21T19:46:29.038Z"
+  }
+}
