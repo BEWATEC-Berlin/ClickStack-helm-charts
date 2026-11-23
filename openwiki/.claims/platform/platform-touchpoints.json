@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:24bc547cd58ff92cb3bb4e8e48176c9b63de6e7cef4c341455af035e8b2e3264",
+  "claims": [
+    {
+      "id": "claim_0e279713b30245f189fc8132c8b350dc",
+      "statement": "With fullnameOverride set, the HyperDX Deployment and Service are named exactly the override value, so fullnameOverride cs yields Service cs.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/_helpers.tpl",
+          "version": "repo-file-v1:sha256:476c831492d126e716128bafc06208e3f566260870d584b7c1cf7f19d5886142"
+        },
+        {
+          "resource": "repo://charts/clickstack/templates/hyperdx/service.yaml",
+          "version": "repo-file-v1:sha256:102739288489cdf450d27569b364c81da30894b2ea284d85aa53959f88d5e62e"
+        }
+      ]
+    },
+    {
+      "id": "claim_0fefa690b8c8414d815b86e76f6d941c",
+      "statement": "The ClickHouse, Keeper and MongoDB CR names derive from the base fullname with -clickhouse, -keeper and -mongodb suffixes; the MongoDB Service adds -svc and the ClickHouse service helper adds -clickhouse-headless.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/_helpers.tpl",
+          "version": "repo-file-v1:sha256:476c831492d126e716128bafc06208e3f566260870d584b7c1cf7f19d5886142"
+        }
+      ]
+    },
+    {
+      "id": "claim_c55264a04278429384e0674677658060",
+      "statement": "The OTel collector name helper uses the release name: <release>-otel-collector.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/_helpers.tpl",
+          "version": "repo-file-v1:sha256:476c831492d126e716128bafc06208e3f566260870d584b7c1cf7f19d5886142"
+        }
+      ]
+    },
+    {
+      "id": "claim_e5b868bd31bf4933b9249546a11adfc3",
+      "statement": "The chart's ConfigMap clickstack-config carries CLICKHOUSE_ENDPOINT, CLICKHOUSE_USER and HYPERDX_OTEL_EXPORTER_CLICKHOUSE_DATABASE by default.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/hyperdx/configmap.yaml",
+          "version": "repo-file-v1:sha256:9303da6b3079d731556705afe6b484d54b05c466b17fbc8c8f1014d1a957e34d"
+        },
+        {
+          "resource": "repo://charts/clickstack/values.yaml",
+          "version": "repo-file-v1:sha256:828768ab3244832214d8773fdfc99a3146bf5fd058dcb01208b34a0e51e138a7"
+        }
+      ]
+    },
+    {
+      "id": "claim_0f5937a46ab6414186c7fcdff00cbefe",
+      "statement": "When hyperdx.existingSecret.name equals clickstack-secret, the fork's otel-collector extraEnvsFrom check does not apply.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/hyperdx/secret.yaml",
+          "version": "repo-file-v1:sha256:9099d200b6bb6035db044a669b47514490a92385eb538dcb84748aba8e1ad056"
+        }
+      ]
+    },
+    {
+      "id": "claim_dac165f481bf44ecaf85e5ec404a933e",
+      "statement": "The HyperDX Deployment template renders the wait-for-mongodb init container and the app container without a securityContext.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/hyperdx/deployment.yaml",
+          "version": "repo-file-v1:sha256:37e650fc695d77c3de8a0fd604ec67ee9e4bb61b344e438af501a7fe00637914"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.9.0",
+    "at": "2026-11-21T19:46:29.038Z"
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:2a9103a629e0f86c6953502a24db11314eb1b96e1ae1a53289c9bfbad1362e92",
+  "claims": [
+    {
+      "id": "claim_7ff3572c9476430b93da818dc98f76ec",
+      "statement": "charts/clickstack is version 3.0.1 with appVersion 2.29.0 and depends on opentelemetry-collector ~0.146.0 aliased otel-collector, gated by otel-collector.enabled.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/Chart.yaml",
+          "version": "repo-file-v1:sha256:f62569a2160726ed6e6132458cd4e021473934f0903a4f1009310a4bc4919b68"
+        }
+      ]
+    },
+    {
+      "id": "claim_17dcf8b6a838467f9d3c9957bd39373e",
+      "statement": "charts/clickstack-operators version 1.0.0 bundles mongodb-kubernetes ~1.7.0 (alias mongodb-operator) and clickhouse-operator-helm ~0.0.2 from oci://ghcr.io/clickhouse (alias clickhouse-operator), with the ClickHouse operator webhook and cert-manager disabled and CRDs enabled.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack-operators/Chart.yaml",
+          "version": "repo-file-v1:sha256:d6d9c440d503276589df40652473e9f31ef2726a42a91300dcda2e1879971d39"
+        },
+        {
+          "resource": "repo://charts/clickstack-operators/values.yaml",
+          "version": "repo-file-v1:sha256:c85e75d580c74fb7a3768bcc5f640fb9a954520d185de8c888102dcbd4760ef0"
+        }
+      ]
+    },
+    {
+      "id": "claim_356d015d4639426c9f44762f8bf462a1",
+      "statement": "clickstack.fullname returns fullnameOverride when set, otherwise the release name if it contains the chart name, otherwise <release>-<chart>; clickstack.hyperdx.fullname returns fullnameOverride exactly when set and <fullname>-app otherwise.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/_helpers.tpl",
+          "version": "repo-file-v1:sha256:476c831492d126e716128bafc06208e3f566260870d584b7c1cf7f19d5886142"
+        }
+      ]
+    },
+    {
+      "id": "claim_8a31c76bc4b24ceb8d7d7063f109b0a2",
+      "statement": "MongoDB, ClickHouse and Keeper CRs are named <fullname>-mongodb, <fullname>-clickhouse and <fullname>-keeper; the OTel collector name is <release>-otel-collector; the ClickHouse service helper resolves to <clickhouse fullname>-clickhouse-headless.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/_helpers.tpl",
+          "version": "repo-file-v1:sha256:476c831492d126e716128bafc06208e3f566260870d584b7c1cf7f19d5886142"
+        },
+        {
+          "resource": "repo://charts/clickstack/templates/clickhouse/cluster.yaml",
+          "version": "repo-file-v1:sha256:fba4ac67002096160833bb56d2b296ba213b016e628e9b4e0507f3b95fc94387"
+        },
+        {
+          "resource": "repo://charts/clickstack/templates/clickhouse/keeper.yaml",
+          "version": "repo-file-v1:sha256:48ec5863f48420fb8908d61372ee282130232eda3c55a4879d7f7d423705bdd3"
+        },
+        {
+          "resource": "repo://charts/clickstack/templates/mongodb/community.yaml",
+          "version": "repo-file-v1:sha256:91e5fceeb1f073ff174c3a959cd9a6c1873dd050435de31a6cc88b664e0c4f11"
+        }
+      ]
+    },
+    {
+      "id": "claim_24471fc85af7410aa0ef68658cdda6d8",
+      "statement": "The HyperDX ConfigMap is always named clickstack-config, and its values are rendered through tpl.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/hyperdx/configmap.yaml",
+          "version": "repo-file-v1:sha256:9303da6b3079d731556705afe6b484d54b05c466b17fbc8c8f1014d1a957e34d"
+        }
+      ]
+    },
+    {
+      "id": "claim_82babb557d87484fa5e4dba32dde6a5a",
+      "statement": "The default hyperdx.config.MONGO_URI embeds hyperdx.secrets.MONGODB_PASSWORD, and the default ClickHouse app and otelcollector user passwords are templated from hyperdx.secrets.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/values.yaml",
+          "version": "repo-file-v1:sha256:828768ab3244832214d8773fdfc99a3146bf5fd058dcb01208b34a0e51e138a7"
+        }
+      ]
+    },
+    {
+      "id": "claim_920d7cb18af443d8aaf56760fe1267d2",
+      "statement": "otel-collector.extraEnvsFrom defaults to the clickstack-config ConfigMap and the clickstack-secret Secret, and the collector image is docker.clickhouse.com/clickhouse/clickstack-otel-collector.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/values.yaml",
+          "version": "repo-file-v1:sha256:828768ab3244832214d8773fdfc99a3146bf5fd058dcb01208b34a0e51e138a7"
+        }
+      ]
+    },
+    {
+      "id": "claim_aad91b4481bf451ca4715ff62aec8644",
+      "statement": "hyperdx.tasks.enabled defaults to false and gates the <fullname>-check-alerts CronJob.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/templates/hyperdx/cronjob-check-alerts.yaml",
+          "version": "repo-file-v1:sha256:c63201ed7607568d58f0b226827d3255e5e0820544f155da89d01ede3f24b431"
+        },
+        {
+          "resource": "repo://charts/clickstack/values.yaml",
+          "version": "repo-file-v1:sha256:828768ab3244832214d8773fdfc99a3146bf5fd058dcb01208b34a0e51e138a7"
+        }
+      ]
+    },
+    {
+      "id": "claim_b545b9a390dc4a658e71f555f1a319cb",
+      "statement": "The Helm Chart Tests workflow renders the alb-ingress and api-only examples and runs helm unittest charts/clickstack on pull requests to main and on pushes to main that change charts/**.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/helm-test.yaml",
+          "version": "repo-file-v1:sha256:beb7aecdf5e94889a2045c2641ece0f7eab19884ae0cd27deef412c6dd6336bd"
+        }
+      ]
+    },
+    {
+      "id": "claim_ddef8e4051a941038826d1f4268eb631",
+      "statement": "The release workflow is triggered when either Helm Chart Tests or Helm Chart Integration Test completes on main and checks only the triggering run's conclusion, then uses changesets/action and helm/chart-releaser-action when no changesets remain.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/release.yml",
+          "version": "repo-file-v1:sha256:af302b85709a632f9b8bb23bedec5c6ab51e63392a832d006d8ad05f70316913"
+        }
+      ]
+    },
+    {
+      "id": "claim_3ce6d039f875422a8f0c8e2c2e7c36ea",
+      "statement": "The integration-test workflow runs on push, PR and a nightly schedule, with one job per integration-tests/*/suite.yaml.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/chart-test.yml",
+          "version": "repo-file-v1:sha256:fdc269022e94fb21da0d3defaf9d609bfb12d25d3d3f51c35b0c86e4a2481a04"
+        }
+      ]
+    },
+    {
+      "id": "claim_2e9f04f4ba014c88bf9b5f13abe318b2",
+      "statement": "The workspace package is named helm-charts and the version script copies package.json version into charts/clickstack/Chart.yaml.",
+      "evidence": [
+        {
+          "resource": "repo://package.json",
+          "version": "repo-file-v1:sha256:511bbe639634c6eafb2851e5016480967a530277b78d6ea0acceb67b3467a7d8"
+        },
+        {
+          "resource": "repo://scripts/update-chart-versions.js",
+          "version": "repo-file-v1:sha256:153add30ba41cebf3bb2b6cdec5e1514fa3044a26ad277e2cabfe158f1564fcd"
+        }
+      ]
+    },
+    {
+      "id": "claim_80cd26a4eae84e698ec181663593300b",
+      "statement": "AGENTS.md documents upstream conventions: warren/ branch prefix, [HDX-<ticket>] PR titles, Linear tickets and Kodiak auto-merge.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md",
+          "version": "repo-file-v1:sha256:f14304e88e01f271aa1479d0309a8df8552ce5e4b519360bc6d3d6b61c2edcd7"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e3372a235bc4f06b0f4edb59fe4b3c0",
+      "statement": "charts/clickstack/Chart.lock pins opentelemetry-collector to 0.146.1 for the ~0.146.0 range in Chart.yaml.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack/Chart.lock",
+          "version": "repo-file-v1:sha256:1d7da3c27baa98acc3cae01e960b03dbe0070bed9c3e58c4028fe50df06787e6"
+        },
+        {
+          "resource": "repo://charts/clickstack/Chart.yaml",
+          "version": "repo-file-v1:sha256:f62569a2160726ed6e6132458cd4e021473934f0903a4f1009310a4bc4919b68"
+        }
+      ]
+    },
+    {
+      "id": "claim_2077ebb4ca9943b494bbb38d01cea80e",
+      "statement": "charts/clickstack-operators/Chart.lock pins mongodb-kubernetes 1.7.0 and clickhouse-operator-helm 0.0.2.",
+      "evidence": [
+        {
+          "resource": "repo://charts/clickstack-operators/Chart.lock",
+          "version": "repo-file-v1:sha256:e9521612fa878dda33e955090ee1dfda3e9684d2202a3370dd91b447bb4e70ca"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.9.0",
+    "at": "2026-11-21T19:46:29.038Z"
+  }
+}

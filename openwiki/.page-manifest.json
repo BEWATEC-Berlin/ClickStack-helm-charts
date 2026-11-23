@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/chart/chart-structure.md": {
+      "pageVersion": "sha256:2a9103a629e0f86c6953502a24db11314eb1b96e1ae1a53289c9bfbad1362e92",
+      "completedBy": "claude-code",
+      "completedRunId": "a3d2365e-1034-410f-80d9-0d831e56c689",
+      "gitHead": "23f018e119ce01b02e2764c6e3d50e619a2e62a6",
+      "sourceFingerprint": "sha256:37f1484d1ce3503d0c4ca65ffa18e1e412493c9002ea0673328e70658fdfd64f"
+    },
+    "/openwiki/fork/external-secret-mode.md": {
+      "pageVersion": "sha256:07d65bf27a0afdd2c9e81df8e48b9c9b0b5c34a0b780c4f49d5332e58f1dd5a3",
+      "completedBy": "claude-code",
+      "completedRunId": "a3d2365e-1034-410f-80d9-0d831e56c689",
+      "gitHead": "23f018e119ce01b02e2764c6e3d50e619a2e62a6",
+      "sourceFingerprint": "sha256:37f1484d1ce3503d0c4ca65ffa18e1e412493c9002ea0673328e70658fdfd64f"
+    },
+    "/openwiki/platform/platform-touchpoints.md": {
+      "pageVersion": "sha256:24bc547cd58ff92cb3bb4e8e48176c9b63de6e7cef4c341455af035e8b2e3264",
+      "completedBy": "claude-code",
+      "completedRunId": "a3d2365e-1034-410f-80d9-0d831e56c689",
+      "gitHead": "23f018e119ce01b02e2764c6e3d50e619a2e62a6",
+      "sourceFingerprint": "sha256:37f1484d1ce3503d0c4ca65ffa18e1e412493c9002ea0673328e70658fdfd64f"
+    },
+    "/openwiki/quickstart.md": {
+      "pageVersion": "sha256:1f19dd2110ed5016e0e489f30cc84e0327515ed249709f10bc99bc9ac71138c4",
+      "completedBy": "claude-code",
+      "completedRunId": "a3d2365e-1034-410f-80d9-0d831e56c689",
+      "gitHead": "23f018e119ce01b02e2764c6e3d50e619a2e62a6",
+      "sourceFingerprint": "sha256:37f1484d1ce3503d0c4ca65ffa18e1e412493c9002ea0673328e70658fdfd64f"
+    }
+  }
+}

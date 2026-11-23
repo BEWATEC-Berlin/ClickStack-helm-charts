@@ -165,3 +165,7 @@ tests:
 - Example values: `examples/*/values.yaml`
 - Version sync script: `scripts/update-chart-versions.js`
 - Smoke test: `scripts/smoke-test.sh`
+
+## OpenWiki
+
+`openwiki/` holds a generated wiki of this repository; start at `openwiki/quickstart.md`. Code and tests are authoritative. Regenerate pages with the `openwiki` skill instead of editing them by hand. Assistant setup and shared skills, including `connectedcare-wiki` for questions that span repositories, live in [ai-toolkit](https://github.com/BEWATEC-Berlin/ai-toolkit).
